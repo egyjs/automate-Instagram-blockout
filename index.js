@@ -9,11 +9,68 @@ const main = async () => {
 
     const browser = await pie.connect(app, puppeteer);
     const win = new BrowserWindow();
-
+    win.setProgressBar(1.1);
+    win.show();
 
     const url = `https://www.instagram.com/accounts/login/?next=https%3A%2F%2Finstagram.com%2F${username}%2Ffollowing%2F`;
     await win.loadURL(url);
 
+    const blockout = async (page) => {
+        page.goto(`https://www.instagram.com/${username}/following/`).then(async () => {
+            console.log('click on the button "following"');
+            await page.waitForSelector(`a[href="/${username}/following/"]`);
+            await page.click(`a[href="/${username}/following/"]`);
+            console.log('scrolling down in the following list ._aano');
+            const scrollable_section = '._aano';
+
+            await page.waitForSelector(scrollable_section);
+
+            const usernames = await page.evaluate(async (selector) => {
+                let users = [];
+                let previousHeight = 0;
+                let sameHeightCount = 0;
+                const maxSameHeightCount = 10; // Number of iterations to confirm the end of scrolling
+
+                return new Promise((resolve) => {
+                    const scrollAndCollect = setInterval(() => {
+                        const element = document.querySelector(selector);
+                        const currentHeight = element.scrollHeight;
+                        element.scrollTop = currentHeight;
+
+                        if (currentHeight === previousHeight) {
+                            sameHeightCount++;
+                        } else {
+                            sameHeightCount = 0;
+                        }
+
+                        previousHeight = currentHeight;
+
+                        if (sameHeightCount >= maxSameHeightCount) {
+                            clearInterval(scrollAndCollect);
+                            document.querySelectorAll(selector + ' [href] span').forEach((element) => {
+                                users.push(element.innerText);
+                            });
+                            resolve(users);
+                        }
+                    }, 1000);
+                });
+            }, scrollable_section);
+
+            console.log(usernames);
+            // set ProgressBar based on the number of users
+
+
+            // block users
+            let i = 0;
+            for (const user of usernames) {
+                i++;
+                win.setProgressBar(i / usernames.length);
+                console.log(`progress: ${i}/${usernames.length}`);
+                await block(page, user);
+                await wait(rand(5000, 50000));
+            }
+        });
+    }
 
     // open the dev tools
     // window.webContents.openDevTools();
@@ -31,6 +88,8 @@ const main = async () => {
         await blockout(page);
     }
 
+
+    // win.setProgressBar(-1);
 
     // window.destroy();
 };
@@ -57,7 +116,6 @@ const clickButtonByText = async (page, text) => {
     await page.waitForSelector('button');
     // foreach on all buttons and click on the one that contains "Block"
     const buttons = await page.$$('button');
-    console.log(buttons)
     for (const button of buttons) {
         const buttonText = await page.evaluate(element => element.textContent, button);
         if (buttonText === text) {
@@ -72,60 +130,6 @@ const clickButtonByText = async (page, text) => {
 const wait = async (ms) => {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
-    });
-}
-
-// get all the users in the following list
-const blockout = async (page) => {
-    page.goto(`https://www.instagram.com/${username}/following/`).then(async () => {
-        console.log('click on the button "following"');
-        await page.waitForSelector(`a[href="/${username}/following/"]`);
-        await page.click(`a[href="/${username}/following/"]`);
-        console.log('scrolling down in the following list ._aano');
-        const scrollable_section = '._aano';
-
-        await page.waitForSelector(scrollable_section);
-
-        const usernames = await page.evaluate(async (selector) => {
-            let users = [];
-            let previousHeight = 0;
-            let sameHeightCount = 0;
-            const maxSameHeightCount = 10; // Number of iterations to confirm the end of scrolling
-
-            return new Promise((resolve) => {
-                const scrollAndCollect = setInterval(() => {
-                    const element = document.querySelector(selector);
-                    const currentHeight = element.scrollHeight;
-                    element.scrollTop = currentHeight;
-
-                    if (currentHeight === previousHeight) {
-                        sameHeightCount++;
-                    } else {
-                        sameHeightCount = 0;
-                    }
-
-                    previousHeight = currentHeight;
-
-                    if (sameHeightCount >= maxSameHeightCount) {
-                        clearInterval(scrollAndCollect);
-                        document.querySelectorAll(selector + ' [href] span').forEach((element) => {
-                            users.push(element.innerText);
-                        });
-                        resolve(users);
-                    }
-                }, 1000);
-            });
-        }, scrollable_section);
-
-        console.log(usernames);
-
-        // block the user
-        // await block(page, usernames[0]);
-        // block users
-        for (const user of usernames) {
-            await block(page, user);
-            await wait(rand(5000, 50000));
-        }
     });
 }
 
