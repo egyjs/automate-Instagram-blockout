@@ -1,0 +1,20 @@
+{
+  "name": "blackout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "nodemon --watch index.js --exec npm start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer-core": "^22.10.0",
+    "puppeteer-in-electron": "^3.0.5"
+  },
+  "devDependencies": {
+    "electron": "^30.0.8"
+  }
+}
