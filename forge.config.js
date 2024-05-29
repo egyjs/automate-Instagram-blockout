@@ -17,7 +17,7 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         noMsi: true,
-        setupIcon: './', // Optional: Add a custom icon
+        // setupIcon: './', // Optional: Add a custom icon
       },
     },
     {
