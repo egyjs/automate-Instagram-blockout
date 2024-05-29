@@ -3,7 +3,7 @@ const pie = require("puppeteer-in-electron")
 const puppeteer = require("puppeteer-core");
 
 
-let username = '2024blockout_ar';
+let username = 'chopping.block2024';
 const main = async () => {
     await pie.initialize(app);
 
@@ -12,64 +12,64 @@ const main = async () => {
     win.setProgressBar(1.1);
     win.show();
 
-    const url = `https://www.instagram.com/accounts/login/?next=https%3A%2F%2Finstagram.com%2F${username}%2Ffollowing%2F`;
+    const url = `https://www.instagram.com/accounts/login/?next=https%3A%2F%2Finstagram.com%2F${username}%2Ffollowing%2F&hl=en`;
     await win.loadURL(url);
 
+
     const blockout = async (page) => {
-        page.goto(`https://www.instagram.com/${username}/following/`).then(async () => {
-            console.log('click on the button "following"');
-            await page.waitForSelector(`a[href="/${username}/following/"]`);
-            await page.click(`a[href="/${username}/following/"]`);
-            console.log('scrolling down in the following list ._aano');
-            const scrollable_section = '._aano';
+        await page.goto(`https://www.instagram.com/${username}/following/`);
+        console.log('click on the button "following"');
+        await page.waitForSelector(`a[href="/${username}/following/"]`);
+        await page.click(`a[href="/${username}/following/"]`);
+        console.log('scrolling down in the following list ._aano');
+        const scrollable_section = '._aano';
 
-            await page.waitForSelector(scrollable_section);
+        await page.waitForSelector(scrollable_section);
 
-            const usernames = await page.evaluate(async (selector) => {
-                let users = [];
-                let previousHeight = 0;
-                let sameHeightCount = 0;
-                const maxSameHeightCount = 10; // Number of iterations to confirm the end of scrolling
+        const usernames = await page.evaluate(async (selector) => {
+            let users = [];
+            let previousHeight = 0;
+            let sameHeightCount = 0;
+            const maxSameHeightCount = 10; // Number of iterations to confirm the end of scrolling
 
-                return new Promise((resolve) => {
-                    const scrollAndCollect = setInterval(() => {
-                        const element = document.querySelector(selector);
-                        const currentHeight = element.scrollHeight;
-                        element.scrollTop = currentHeight;
+            return new Promise((resolve) => {
+                const scrollAndCollect = setInterval(() => {
+                    const element = document.querySelector(selector);
+                    const currentHeight = element.scrollHeight;
+                    element.scrollTop = currentHeight;
 
-                        if (currentHeight === previousHeight) {
-                            sameHeightCount++;
-                        } else {
-                            sameHeightCount = 0;
-                        }
+                    if (currentHeight === previousHeight) {
+                        sameHeightCount++;
+                    } else {
+                        sameHeightCount = 0;
+                    }
 
-                        previousHeight = currentHeight;
+                    previousHeight = currentHeight;
 
-                        if (sameHeightCount >= maxSameHeightCount) {
-                            clearInterval(scrollAndCollect);
-                            document.querySelectorAll(selector + ' [href] span').forEach((element) => {
-                                users.push(element.innerText);
-                            });
-                            resolve(users);
-                        }
-                    }, 1000);
-                });
-            }, scrollable_section);
+                    if (sameHeightCount >= maxSameHeightCount) {
+                        clearInterval(scrollAndCollect);
+                        document.querySelectorAll(selector + ' [href] span').forEach((element) => {
+                            users.push(element.innerText);
+                        });
+                        resolve(users);
+                    }
+                }, 1000);
+            });
+        }, scrollable_section);
 
-            console.log(usernames);
-            // set ProgressBar based on the number of users
+        console.log(usernames);
+        // set ProgressBar based on the number of users
 
 
-            // block users
-            let i = 0;
-            for (const user of usernames) {
-                i++;
-                win.setProgressBar(i / usernames.length);
-                console.log(`progress: ${i}/${usernames.length}`);
-                await block(page, user);
-                await wait(rand(5000, 50000));
-            }
-        });
+        // block users
+        let i = 0;
+        for (const user of usernames) {
+            i++;
+            win.setProgressBar(i / usernames.length);
+            console.log(`progress: ${i}/${usernames.length}`);
+            await block(page, user);
+            await wait(rand(5000, 50000));
+        }
     }
 
     // open the dev tools
@@ -77,7 +77,7 @@ const main = async () => {
     const page = await pie.getPage(browser, win);
     page.setDefaultNavigationTimeout(0);
     console.log(page.url());
-    if (page.url() === 'https://www.instagram.com/') {
+    if (page.url() === 'https://www.instagram.com/?hl=en') {
         console.log('Logged in successfully');
         await blockout(page);
     }else{
@@ -89,7 +89,6 @@ const main = async () => {
     }
 
 
-    // win.setProgressBar(-1);
 
     // window.destroy();
 };
@@ -127,17 +126,8 @@ const clickButtonByText = async (page, text) => {
     }
 }
 
-const wait = async (ms) => {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
-}
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // generate random number between min and max
-function rand(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+const rand = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min);
 
